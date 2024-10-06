@@ -11,4 +11,12 @@
         android:textSize="18sp"
         android:textColor="#000000"/>
 
+    <Button
+        android:id="@+id/completeTaskButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="完了"
+        android:layout_below="@id/widgetTaskText"
+        android:layout_marginTop="8dp"/>
+
 </RelativeLayout>
