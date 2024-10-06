@@ -1,16 +1,20 @@
 package com.example.taskreminder
 
+import android.appwidget.AppWidgetManager
+import android.content.ComponentName
+import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.example.taskreminder.ui.theme.TaskReminderTheme
 
 class MainActivity : ComponentActivity() {
@@ -20,9 +24,9 @@ class MainActivity : ComponentActivity() {
         setContent {
             TaskReminderTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
+                    TaskInputScreen(
+                        modifier = Modifier.padding(innerPadding),
+                        sharedPreferences = getSharedPreferences("TaskReminderPrefs", Context.MODE_PRIVATE)
                     )
                 }
             }
@@ -31,18 +35,54 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
+fun TaskInputScreen(modifier: Modifier = Modifier, sharedPreferences: SharedPreferences) {
+    var task by remember { mutableStateOf("") }
+    val context = LocalContext.current
+
+    Column(
         modifier = modifier
-    )
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Center
+    ) {
+        TextField(
+            value = task,
+            onValueChange = { task = it },
+            label = { Text("タスクを入力") },
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Button(
+            onClick = {
+                val editor = sharedPreferences.edit()
+                editor.putString("task", task)
+                editor.apply()
+
+                // ウィジェットを更新
+                val appWidgetManager = AppWidgetManager.getInstance(context)
+                val widgetComponent = ComponentName(context, TaskReminderWidget::class.java)
+                val appWidgetIds = appWidgetManager.getAppWidgetIds(widgetComponent)
+                for (appWidgetId in appWidgetIds) {
+                    updateAppWidget(context, appWidgetManager, appWidgetId, task)
+                }
+
+                task = ""
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("タスクを追加")
+        }
+    }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun GreetingPreview() {
+fun TaskInputScreenPreview() {
+    // プレビュー用のダミーのSharedPreferencesを使う
+    val context = LocalContext.current
+    val sharedPreferences = context.getSharedPreferences("TaskReminderPrefs", Context.MODE_PRIVATE)
+
     TaskReminderTheme {
-        Greeting("Android")
+        TaskInputScreen(sharedPreferences = sharedPreferences)
     }
 }
-
