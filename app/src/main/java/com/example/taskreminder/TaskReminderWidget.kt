@@ -15,6 +15,12 @@ class TaskReminderWidget : AppWidgetProvider() {
         super.onReceive(context, intent)
 
         if (intent.action == "TASK_COMPLETED") {
+            // タスク完了時に SharedPreferences に完了状態を保存
+            val sharedPreferences = context.getSharedPreferences("TaskReminderPrefs", Context.MODE_PRIVATE)
+            val editor = sharedPreferences.edit()
+            editor.putBoolean("taskCompleted", true) // タスクが完了したことを保存
+            editor.apply()
+
             val appWidgetManager = AppWidgetManager.getInstance(context)
             val thisAppWidget = ComponentName(context.packageName, javaClass.name)
             val appWidgetIds = appWidgetManager.getAppWidgetIds(thisAppWidget)
@@ -45,12 +51,17 @@ class TaskReminderWidget : AppWidgetProvider() {
 internal fun updateAppWidget(context: Context, appWidgetManager: AppWidgetManager, appWidgetId: Int) {
     val views = RemoteViews(context.packageName, R.layout.task_reminder_widget)
 
-    // SharedPreferencesからタスクを取得
+    // SharedPreferencesからタスクと完了状態を取得
     val sharedPreferences = context.getSharedPreferences("TaskReminderPrefs", Context.MODE_PRIVATE)
     val task = sharedPreferences.getString("task", "今日のタスク: 未設定")
+    val taskCompleted = sharedPreferences.getBoolean("taskCompleted", false)
 
-    // ウィジェットのTextViewにタスクを表示
-    views.setTextViewText(R.id.widgetTaskText, task)
+    // 完了状態に応じて表示を変更
+    if (taskCompleted) {
+        views.setTextViewText(R.id.widgetTaskText, "$task - 完了")
+    } else {
+        views.setTextViewText(R.id.widgetTaskText, task)
+    }
 
     // 完了ボタンのPendingIntentを設定
     val intent = Intent(context, TaskReminderWidget::class.java)
