@@ -18,5 +18,4 @@
         android:text="完了"
         android:layout_below="@id/widgetTaskText"
         android:layout_marginTop="8dp"/>
-
 </RelativeLayout>

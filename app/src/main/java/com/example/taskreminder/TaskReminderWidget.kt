@@ -3,7 +3,7 @@ package com.example.taskreminder
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
-import android.content.ComponentName  // 追加
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.widget.RemoteViews
@@ -19,7 +19,7 @@ class TaskReminderWidget : AppWidgetProvider() {
             val thisAppWidget = ComponentName(context.packageName, javaClass.name)
             val appWidgetIds = appWidgetManager.getAppWidgetIds(thisAppWidget)
             for (appWidgetId in appWidgetIds) {
-                updateAppWidget(context, appWidgetManager, appWidgetId, "タスク完了")
+                updateAppWidget(context, appWidgetManager, appWidgetId)
             }
 
             // タスク完了の通知をユーザーに表示
@@ -33,18 +33,29 @@ class TaskReminderWidget : AppWidgetProvider() {
         }
     }
 
-    override fun onEnabled(context: Context) {}
-    override fun onDisabled(context: Context) {}
+    override fun onEnabled(context: Context) {
+        // 初回ウィジェット追加時の処理
+    }
+
+    override fun onDisabled(context: Context) {
+        // 最後のウィジェットが削除された時の処理
+    }
 }
 
-internal fun updateAppWidget(context: Context, appWidgetManager: AppWidgetManager, appWidgetId: Int, taskStatus: String = "今日のタスク: ミーティング") {
+internal fun updateAppWidget(context: Context, appWidgetManager: AppWidgetManager, appWidgetId: Int) {
     val views = RemoteViews(context.packageName, R.layout.task_reminder_widget)
-    views.setTextViewText(R.id.widgetTaskText, taskStatus)
+
+    // SharedPreferencesからタスクを取得
+    val sharedPreferences = context.getSharedPreferences("TaskReminderPrefs", Context.MODE_PRIVATE)
+    val task = sharedPreferences.getString("task", "今日のタスク: 未設定")
+
+    // ウィジェットのTextViewにタスクを表示
+    views.setTextViewText(R.id.widgetTaskText, task)
 
     // 完了ボタンのPendingIntentを設定
     val intent = Intent(context, TaskReminderWidget::class.java)
     intent.action = "TASK_COMPLETED"
-    val pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE) // FLAG_IMMUTABLE を追加
+    val pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
     views.setOnClickPendingIntent(R.id.completeTaskButton, pendingIntent)
 
     appWidgetManager.updateAppWidget(appWidgetId, views)

@@ -63,7 +63,7 @@ fun TaskInputScreen(modifier: Modifier = Modifier, sharedPreferences: SharedPref
                 val widgetComponent = ComponentName(context, TaskReminderWidget::class.java)
                 val appWidgetIds = appWidgetManager.getAppWidgetIds(widgetComponent)
                 for (appWidgetId in appWidgetIds) {
-                    updateAppWidget(context, appWidgetManager, appWidgetId, task)
+                    updateAppWidget(context, appWidgetManager, appWidgetId) // 修正箇所: task引数を削除
                 }
 
                 task = ""
