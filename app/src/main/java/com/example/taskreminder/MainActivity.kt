@@ -16,6 +16,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.taskreminder.ui.theme.TaskReminderTheme
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,16 +56,19 @@ fun TaskInputScreen(modifier: Modifier = Modifier, sharedPreferences: SharedPref
         Spacer(modifier = Modifier.height(8.dp))
         Button(
             onClick = {
-                val editor = sharedPreferences.edit()
-                editor.putString("task", task)
-                editor.apply()
+                // 既存のタスクリストを取得
+                val taskList = getTaskList(sharedPreferences)
+                taskList.add(task)
+
+                // 更新されたタスクリストを保存
+                saveTaskList(sharedPreferences, taskList)
 
                 // ウィジェットを更新
                 val appWidgetManager = AppWidgetManager.getInstance(context)
                 val widgetComponent = ComponentName(context, TaskReminderWidget::class.java)
                 val appWidgetIds = appWidgetManager.getAppWidgetIds(widgetComponent)
                 for (appWidgetId in appWidgetIds) {
-                    updateAppWidget(context, appWidgetManager, appWidgetId) // 修正箇所: task引数を削除
+                    TaskReminderWidget.updateAppWidget(context, appWidgetManager, appWidgetId) // メソッドを呼び出す
                 }
 
                 task = ""
@@ -75,13 +80,32 @@ fun TaskInputScreen(modifier: Modifier = Modifier, sharedPreferences: SharedPref
     }
 }
 
+// タスクリストを取得
+fun getTaskList(sharedPreferences: SharedPreferences): MutableList<String> {
+    val gson = Gson()
+    val json = sharedPreferences.getString("taskList", null)
+    val type = object : TypeToken<MutableList<String>>() {}.type
+    return if (json != null) {
+        gson.fromJson(json, type)
+    } else {
+        mutableListOf()
+    }
+}
+
+// タスクリストを保存
+fun saveTaskList(sharedPreferences: SharedPreferences, taskList: MutableList<String>) {
+    val gson = Gson()
+    val json = gson.toJson(taskList)
+    val editor = sharedPreferences.edit()
+    editor.putString("taskList", json)
+    editor.apply()
+}
+
 @Preview(showBackground = true)
 @Composable
 fun TaskInputScreenPreview() {
-    // プレビュー用のダミーのSharedPreferencesを使う
     val context = LocalContext.current
     val sharedPreferences = context.getSharedPreferences("TaskReminderPrefs", Context.MODE_PRIVATE)
-
     TaskReminderTheme {
         TaskInputScreen(sharedPreferences = sharedPreferences)
     }
