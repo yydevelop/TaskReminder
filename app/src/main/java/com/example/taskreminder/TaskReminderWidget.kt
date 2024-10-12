@@ -56,7 +56,7 @@ class TaskReminderWidget : AppWidgetProvider() {
 
             taskList.forEachIndexed { index, task ->
                 // 各タスクごとにレイアウトを設定
-                val taskView = RemoteViews(context.packageName, R.layout.task_item) // ここで task_item.xml を使います
+                val taskView = RemoteViews(context.packageName, R.layout.task_item)
                 taskView.setTextViewText(R.id.taskNameText, task)
 
                 // チェックボックスのPendingIntentを設定
@@ -70,6 +70,11 @@ class TaskReminderWidget : AppWidgetProvider() {
                 views.addView(R.id.taskContainer, taskView)
             }
 
+            // + ボタンのインテントを設定
+            val addTaskIntent = Intent(context, MainActivity::class.java)
+            val addTaskPendingIntent = PendingIntent.getActivity(context, 0, addTaskIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+            views.setOnClickPendingIntent(R.id.addTaskButton, addTaskPendingIntent)
+
             appWidgetManager.updateAppWidget(appWidgetId, views)
         }
 
@@ -79,7 +84,7 @@ class TaskReminderWidget : AppWidgetProvider() {
             val json = sharedPreferences.getString("taskList", null)
             val type = object : TypeToken<MutableList<String>>() {}.type
             return if (json != null) {
-                gson.fromJson(json, type)
+                gson.fromJson<MutableList<String>>(json, type) // 型を明示的に指定してオーバーロードの解決を助けます
             } else {
                 mutableListOf()
             }
