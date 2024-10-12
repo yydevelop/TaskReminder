@@ -1,24 +1,26 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:padding="16dp"
     android:background="#CCFFFFFF">
 
-    <!-- + ボタンを追加 -->
+    <!-- + ボタンを左上に配置 -->
     <Button
         android:id="@+id/addTaskButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="+"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="16dp"/>
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_margin="8dp" />
 
     <!-- タスクとチェックボックスを表示するコンテナ -->
     <LinearLayout
         android:id="@+id/taskContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical" />
+        android:layout_below="@id/addTaskButton"
+        android:orientation="vertical"
+        android:layout_marginTop="16dp" />
 
-</LinearLayout>
+</RelativeLayout>
