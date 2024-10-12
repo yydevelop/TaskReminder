@@ -8,7 +8,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.widget.RemoteViews
-import android.widget.Toast
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
@@ -31,8 +30,6 @@ class TaskReminderWidget : AppWidgetProvider() {
                 for (appWidgetId in appWidgetIds) {
                     updateAppWidget(context, appWidgetManager, appWidgetId)
                 }
-
-                Toast.makeText(context, "タスクが完了しました", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -54,17 +51,23 @@ class TaskReminderWidget : AppWidgetProvider() {
             val sharedPreferences = context.getSharedPreferences("TaskReminderPrefs", Context.MODE_PRIVATE)
             val taskList = getTaskList(sharedPreferences)
 
-            // タスクリストを表示
-            val taskDisplay = taskList.joinToString(separator = "\n")
-            views.setTextViewText(R.id.widgetTaskText, taskDisplay)
+            // タスクコンテナをクリアして、チェックボックスとタスクを追加
+            views.removeAllViews(R.id.taskContainer)
 
-            // 完了ボタンのPendingIntentを設定（各タスクごと）
-            taskList.forEachIndexed { index, _ ->
+            taskList.forEachIndexed { index, task ->
+                // 各タスクごとにレイアウトを設定
+                val taskView = RemoteViews(context.packageName, R.layout.task_item) // ここで task_item.xml を使います
+                taskView.setTextViewText(R.id.taskNameText, task)
+
+                // チェックボックスのPendingIntentを設定
                 val intent = Intent(context, TaskReminderWidget::class.java)
                 intent.action = "TASK_COMPLETED"
                 intent.putExtra("taskIndex", index)
                 val pendingIntent = PendingIntent.getBroadcast(context, index, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-                views.setOnClickPendingIntent(R.id.completeTaskButton, pendingIntent)
+                taskView.setOnClickPendingIntent(R.id.taskCheckBox, pendingIntent)
+
+                // タスクコンテナに追加
+                views.addView(R.id.taskContainer, taskView)
             }
 
             appWidgetManager.updateAppWidget(appWidgetId, views)
