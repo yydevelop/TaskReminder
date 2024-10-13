@@ -4,23 +4,37 @@
     android:padding="16dp"
     android:background="#CCFFFFFF">
 
-    <!-- + ボタンを左上に配置 -->
-    <Button
-        android:id="@+id/addTaskButton"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="+"
-        android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:layout_margin="8dp" />
+        android:layout_alignParentEnd="true"
+        android:orientation="horizontal">
 
-    <!-- タスクとチェックボックスを表示するコンテナ -->
+        <!-- + ボタン -->
+        <ImageButton
+            android:id="@+id/addTaskButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@android:drawable/ic_input_add"
+            android:contentDescription="Add Task" />
+
+        <!-- 全タスクのチェックを外すボタン -->
+        <ImageButton
+            android:id="@+id/clearAllTasksButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:src="@android:drawable/ic_menu_close_clear_cancel"
+            android:contentDescription="Clear All Tasks" />
+    </LinearLayout>
+
     <LinearLayout
         android:id="@+id/taskContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/addTaskButton"
         android:orientation="vertical"
+        android:layout_below="@id/addTaskButton"
         android:layout_marginTop="16dp" />
 
 </RelativeLayout>
