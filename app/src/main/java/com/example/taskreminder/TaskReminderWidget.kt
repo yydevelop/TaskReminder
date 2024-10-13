@@ -7,6 +7,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.graphics.Paint
 import android.widget.RemoteViews
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -20,9 +21,13 @@ class TaskReminderWidget : AppWidgetProvider() {
             val taskIndex = intent.getIntExtra("taskIndex", -1)
             if (taskIndex != -1) {
                 val sharedPreferences = context.getSharedPreferences("TaskReminderPrefs", Context.MODE_PRIVATE)
-                val taskList = getTaskList(sharedPreferences)
-                taskList.removeAt(taskIndex) // タスクをリストから削除
-                saveTaskList(sharedPreferences, taskList)
+                val completedTasks = getCompletedTasks(sharedPreferences)
+                if (completedTasks.contains(taskIndex)) {
+                    completedTasks.remove(taskIndex) // 取り消し線を解除
+                } else {
+                    completedTasks.add(taskIndex) // 取り消し線を追加
+                }
+                saveCompletedTasks(sharedPreferences, completedTasks)
 
                 val appWidgetManager = AppWidgetManager.getInstance(context)
                 val thisAppWidget = ComponentName(context.packageName, javaClass.name)
@@ -50,6 +55,7 @@ class TaskReminderWidget : AppWidgetProvider() {
             // SharedPreferencesからタスクリストを取得
             val sharedPreferences = context.getSharedPreferences("TaskReminderPrefs", Context.MODE_PRIVATE)
             val taskList = getTaskList(sharedPreferences)
+            val completedTasks = getCompletedTasks(sharedPreferences)
 
             // タスクコンテナをクリアして、チェックボックスとタスクを追加
             views.removeAllViews(R.id.taskContainer)
@@ -58,6 +64,13 @@ class TaskReminderWidget : AppWidgetProvider() {
                 // 各タスクごとにレイアウトを設定
                 val taskView = RemoteViews(context.packageName, R.layout.task_item)
                 taskView.setTextViewText(R.id.taskNameText, task)
+
+                // タスクが完了済みの場合は取り消し線を追加
+                if (completedTasks.contains(index)) {
+                    taskView.setInt(R.id.taskNameText, "setPaintFlags", Paint.STRIKE_THRU_TEXT_FLAG)
+                } else {
+                    taskView.setInt(R.id.taskNameText, "setPaintFlags", 0)
+                }
 
                 // チェックボックスのPendingIntentを設定
                 val intent = Intent(context, TaskReminderWidget::class.java)
@@ -90,12 +103,15 @@ class TaskReminderWidget : AppWidgetProvider() {
             }
         }
 
-        // タスクリストを保存
-        fun saveTaskList(sharedPreferences: SharedPreferences, taskList: MutableList<String>) {
-            val gson = Gson()
-            val json = gson.toJson(taskList)
+        // 完了済みタスクリストを取得
+        fun getCompletedTasks(sharedPreferences: SharedPreferences): MutableSet<Int> {
+            return sharedPreferences.getStringSet("completedTasks", mutableSetOf())?.map { it.toInt() }?.toMutableSet() ?: mutableSetOf()
+        }
+
+        // 完了済みタスクリストを保存
+        fun saveCompletedTasks(sharedPreferences: SharedPreferences, completedTasks: MutableSet<Int>) {
             val editor = sharedPreferences.edit()
-            editor.putString("taskList", json)
+            editor.putStringSet("completedTasks", completedTasks.map { it.toString() }.toSet())
             editor.apply()
         }
     }
