@@ -96,39 +96,44 @@ fun TaskInputScreen(modifier: Modifier = Modifier, sharedPreferences: SharedPref
                 .padding(vertical = 8.dp)
         )
 
-        // タスクの入力フィールドと追加ボタン
-        TextField(
-            value = task,
-            onValueChange = { task = it },
-            label = { Text("タスクを入力") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Button(
-            onClick = {
-                if (task.isNotEmpty()) {
-                    // 既存のタスクリストを取得し、タスクを追加
-                    val updatedTaskList = taskList.value.toMutableList()
-                    updatedTaskList.add(task)
-
-                    // 更新されたタスクリストを保存
-                    saveTaskList(sharedPreferences, updatedTaskList)
-                    taskList.value = updatedTaskList
-
-                    // ウィジェットを更新
-                    val appWidgetManager = AppWidgetManager.getInstance(context)
-                    val widgetComponent = ComponentName(context, TaskReminderWidget::class.java)
-                    val appWidgetIds = appWidgetManager.getAppWidgetIds(widgetComponent)
-                    for (appWidgetId in appWidgetIds) {
-                        TaskReminderWidget.updateAppWidget(context, appWidgetManager, appWidgetId)
-                    }
-
-                    task = ""
-                }
-            },
-            modifier = Modifier.fillMaxWidth()
+        // タスクの入力フィールドと追加ボタンを横に配置
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("タスクを追加")
+            TextField(
+                value = task,
+                onValueChange = { task = it },
+                label = { Text("タスクを入力") },
+                modifier = Modifier.weight(1f)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Button(
+                onClick = {
+                    if (task.isNotEmpty()) {
+                        // 既存のタスクリストを取得し、タスクを追加
+                        val updatedTaskList = taskList.value.toMutableList()
+                        updatedTaskList.add(task)
+
+                        // 更新されたタスクリストを保存
+                        saveTaskList(sharedPreferences, updatedTaskList)
+                        taskList.value = updatedTaskList
+
+                        // ウィジェットを更新
+                        val appWidgetManager = AppWidgetManager.getInstance(context)
+                        val widgetComponent = ComponentName(context, TaskReminderWidget::class.java)
+                        val appWidgetIds = appWidgetManager.getAppWidgetIds(widgetComponent)
+                        for (appWidgetId in appWidgetIds) {
+                            TaskReminderWidget.updateAppWidget(context, appWidgetManager, appWidgetId)
+                        }
+
+                        task = ""
+                    }
+                },
+                modifier = Modifier.wrapContentWidth()
+            ) {
+                Text("追加")
+            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
