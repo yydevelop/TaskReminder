@@ -9,6 +9,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -40,13 +42,15 @@ class MainActivity : ComponentActivity() {
 fun TaskInputScreen(modifier: Modifier = Modifier, sharedPreferences: SharedPreferences) {
     var task by remember { mutableStateOf("") }
     val context = LocalContext.current
+    val taskList = remember { mutableStateOf(getTaskList(sharedPreferences)) }
 
     Column(
         modifier = modifier
             .fillMaxSize()
             .padding(16.dp),
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Top
     ) {
+        // タスクの入力フィールドと追加ボタン
         TextField(
             value = task,
             onValueChange = { task = it },
@@ -56,27 +60,56 @@ fun TaskInputScreen(modifier: Modifier = Modifier, sharedPreferences: SharedPref
         Spacer(modifier = Modifier.height(8.dp))
         Button(
             onClick = {
-                // 既存のタスクリストを取得
-                val taskList = getTaskList(sharedPreferences)
-                taskList.add(task)
+                if (task.isNotEmpty()) {
+                    // 既存のタスクリストを取得し、タスクを追加
+                    val updatedTaskList = taskList.value.toMutableList()
+                    updatedTaskList.add(task)
 
-                // 更新されたタスクリストを保存
-                saveTaskList(sharedPreferences, taskList)
+                    // 更新されたタスクリストを保存
+                    saveTaskList(sharedPreferences, updatedTaskList)
+                    taskList.value = updatedTaskList
 
-                // ウィジェットを更新
-                val appWidgetManager = AppWidgetManager.getInstance(context)
-                val widgetComponent = ComponentName(context, TaskReminderWidget::class.java)
-                val appWidgetIds = appWidgetManager.getAppWidgetIds(widgetComponent)
-                for (appWidgetId in appWidgetIds) {
-                    TaskReminderWidget.updateAppWidget(context, appWidgetManager, appWidgetId) // メソッドを呼び出す
+                    // ウィジェットを更新
+                    val appWidgetManager = AppWidgetManager.getInstance(context)
+                    val widgetComponent = ComponentName(context, TaskReminderWidget::class.java)
+                    val appWidgetIds = appWidgetManager.getAppWidgetIds(widgetComponent)
+                    for (appWidgetId in appWidgetIds) {
+                        TaskReminderWidget.updateAppWidget(context, appWidgetManager, appWidgetId)
+                    }
+
+                    task = ""
                 }
-
-                task = ""
             },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("タスクを追加")
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // タスクのリストを表示
+        LazyColumn(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            items(taskList.value) { taskItem ->
+                TaskItem(task = taskItem)
+            }
+        }
+    }
+}
+
+@Composable
+fun TaskItem(task: String) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Text(
+            text = task,
+            modifier = Modifier.padding(16.dp)
+        )
     }
 }
 
