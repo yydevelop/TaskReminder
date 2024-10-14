@@ -36,6 +36,10 @@ class TaskReminderWidget : AppWidgetProvider() {
                     updateAppWidget(context, appWidgetManager, appWidgetId)
                 }
             }
+        } else if (intent.action == "ADD_TASK") {
+            val addTaskIntent = Intent(context, MainActivity::class.java)
+            addTaskIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            context.startActivity(addTaskIntent)
         }
     }
 
@@ -84,6 +88,12 @@ class TaskReminderWidget : AppWidgetProvider() {
                 // タスクコンテナに追加
                 views.addView(R.id.taskContainer, taskView)
             }
+
+            // + ボタンのインテントを設定
+            val addTaskIntent = Intent(context, TaskReminderWidget::class.java)
+            addTaskIntent.action = "ADD_TASK"
+            val addTaskPendingIntent = PendingIntent.getBroadcast(context, 0, addTaskIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+            views.setOnClickPendingIntent(R.id.addTaskButton, addTaskPendingIntent)
 
             appWidgetManager.updateAppWidget(appWidgetId, views)
         }
