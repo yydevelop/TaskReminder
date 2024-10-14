@@ -12,7 +12,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
@@ -92,24 +95,55 @@ fun TaskInputScreen(modifier: Modifier = Modifier, sharedPreferences: SharedPref
             modifier = Modifier.fillMaxWidth()
         ) {
             items(taskList.value) { taskItem ->
-                TaskItem(task = taskItem)
+                TaskItem(
+                    task = taskItem,
+                    onDeleteClick = {
+                        // タスクを削除する処理
+                        val updatedTaskList = taskList.value.toMutableList()
+                        updatedTaskList.remove(taskItem)
+                        saveTaskList(sharedPreferences, updatedTaskList)
+                        taskList.value = updatedTaskList
+
+                        // ウィジェットを更新
+                        val appWidgetManager = AppWidgetManager.getInstance(context)
+                        val widgetComponent = ComponentName(context, TaskReminderWidget::class.java)
+                        val appWidgetIds = appWidgetManager.getAppWidgetIds(widgetComponent)
+                        for (appWidgetId in appWidgetIds) {
+                            TaskReminderWidget.updateAppWidget(context, appWidgetManager, appWidgetId)
+                        }
+                    }
+                )
             }
         }
     }
 }
 
 @Composable
-fun TaskItem(task: String) {
+fun TaskItem(task: String, onDeleteClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
-        Text(
-            text = task,
-            modifier = Modifier.padding(16.dp)
-        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = task,
+                modifier = Modifier.weight(1f)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            IconButton(onClick = { onDeleteClick() }) {
+                Icon(
+                    imageVector = Icons.Filled.Delete,
+                    contentDescription = "タスクを削除"
+                )
+            }
+        }
     }
 }
 
