@@ -4,20 +4,22 @@
     android:orientation="horizontal"
     android:padding="8dp">
 
-    <!-- 左側にチェックボックスを配置 -->
-    <CheckBox
-        android:id="@+id/taskCheckBox"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical" />
-
-    <!-- タスク名を右側に配置 -->
+    <!-- タスク名を左側に表示 -->
     <TextView
         android:id="@+id/taskNameText"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_weight="1"
         android:layout_gravity="center_vertical"
         android:text="タスク名"
         android:textSize="16sp"
         android:layout_marginStart="8dp" />
+
+    <!-- 完了/戻すボタンを右側に配置 -->
+    <Button
+        android:id="@+id/taskCompleteButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:text="完了" />
 </LinearLayout>

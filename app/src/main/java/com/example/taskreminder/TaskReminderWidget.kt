@@ -36,16 +36,6 @@ class TaskReminderWidget : AppWidgetProvider() {
                     updateAppWidget(context, appWidgetManager, appWidgetId)
                 }
             }
-        } else if (intent.action == "CLEAR_ALL_TASKS") {
-            val sharedPreferences = context.getSharedPreferences("TaskReminderPrefs", Context.MODE_PRIVATE)
-            saveCompletedTasks(sharedPreferences, mutableSetOf()) // 完了済みタスクリストをクリア
-
-            val appWidgetManager = AppWidgetManager.getInstance(context)
-            val thisAppWidget = ComponentName(context.packageName, javaClass.name)
-            val appWidgetIds = appWidgetManager.getAppWidgetIds(thisAppWidget)
-            for (appWidgetId in appWidgetIds) {
-                updateAppWidget(context, appWidgetManager, appWidgetId)
-            }
         }
     }
 
@@ -78,31 +68,22 @@ class TaskReminderWidget : AppWidgetProvider() {
                 // タスクが完了済みの場合は取り消し線を追加
                 if (completedTasks.contains(index)) {
                     taskView.setInt(R.id.taskNameText, "setPaintFlags", Paint.STRIKE_THRU_TEXT_FLAG)
+                    taskView.setTextViewText(R.id.taskCompleteButton, "戻す")
                 } else {
                     taskView.setInt(R.id.taskNameText, "setPaintFlags", 0)
+                    taskView.setTextViewText(R.id.taskCompleteButton, "完了")
                 }
 
-                // チェックボックスのPendingIntentを設定
+                // 完了/戻すボタンのPendingIntentを設定
                 val intent = Intent(context, TaskReminderWidget::class.java)
                 intent.action = "TASK_COMPLETED"
                 intent.putExtra("taskIndex", index)
                 val pendingIntent = PendingIntent.getBroadcast(context, index, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-                taskView.setOnClickPendingIntent(R.id.taskCheckBox, pendingIntent)
+                taskView.setOnClickPendingIntent(R.id.taskCompleteButton, pendingIntent)
 
                 // タスクコンテナに追加
                 views.addView(R.id.taskContainer, taskView)
             }
-
-            // + ボタンのインテントを設定
-            val addTaskIntent = Intent(context, MainActivity::class.java)
-            val addTaskPendingIntent = PendingIntent.getActivity(context, 0, addTaskIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-            views.setOnClickPendingIntent(R.id.addTaskButton, addTaskPendingIntent)
-
-            // 全タスクのチェックを外すボタンのインテントを設定
-            val clearAllTasksIntent = Intent(context, TaskReminderWidget::class.java)
-            clearAllTasksIntent.action = "CLEAR_ALL_TASKS"
-            val clearAllTasksPendingIntent = PendingIntent.getBroadcast(context, 0, clearAllTasksIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-            views.setOnClickPendingIntent(R.id.clearAllTasksButton, clearAllTasksPendingIntent)
 
             appWidgetManager.updateAppWidget(appWidgetId, views)
         }

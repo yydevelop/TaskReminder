@@ -4,11 +4,13 @@
     android:padding="16dp"
     android:background="#CCFFFFFF">
 
+    <!-- 上部にボタンを配置するためのLinearLayout -->
     <LinearLayout
+        android:id="@+id/topButtonsLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true"
+        android:layout_alignParentStart="true"
         android:orientation="horizontal">
 
         <!-- + ボタン -->
@@ -29,12 +31,13 @@
             android:contentDescription="Clear All Tasks" />
     </LinearLayout>
 
+    <!-- タスクコンテナ -->
     <LinearLayout
         android:id="@+id/taskContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:layout_below="@id/addTaskButton"
+        android:layout_below="@id/topButtonsLayout"
         android:layout_marginTop="16dp" />
 
 </RelativeLayout>
