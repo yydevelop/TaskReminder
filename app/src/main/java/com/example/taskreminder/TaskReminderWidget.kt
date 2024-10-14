@@ -17,7 +17,11 @@ class TaskReminderWidget : AppWidgetProvider() {
     override fun onReceive(context: Context, intent: Intent) {
         super.onReceive(context, intent)
 
-        if (intent.action == "TASK_COMPLETED") {
+        if (intent.action == "ADD_TASK") {
+            val addTaskIntent = Intent(context, MainActivity::class.java)
+            addTaskIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            context.startActivity(addTaskIntent)
+        } else if (intent.action == "TASK_COMPLETED") {
             val taskIndex = intent.getIntExtra("taskIndex", -1)
             if (taskIndex != -1) {
                 val sharedPreferences = context.getSharedPreferences("TaskReminderPrefs", Context.MODE_PRIVATE)
@@ -36,10 +40,6 @@ class TaskReminderWidget : AppWidgetProvider() {
                     updateAppWidget(context, appWidgetManager, appWidgetId)
                 }
             }
-        } else if (intent.action == "ADD_TASK") {
-            val addTaskIntent = Intent(context, MainActivity::class.java)
-            addTaskIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            context.startActivity(addTaskIntent)
         }
     }
 
