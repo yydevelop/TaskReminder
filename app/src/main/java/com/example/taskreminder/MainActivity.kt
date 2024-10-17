@@ -1,12 +1,8 @@
 package com.example.taskreminder
 
-import android.app.AlarmManager
-import android.app.PendingIntent
-import android.app.TimePickerDialog
 import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.Context
-import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -30,7 +26,6 @@ import androidx.compose.ui.unit.dp
 import com.example.taskreminder.ui.theme.TaskReminderTheme
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import java.util.Calendar
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,8 +49,6 @@ fun TaskInputScreen(modifier: Modifier = Modifier, sharedPreferences: SharedPref
     var task by remember { mutableStateOf("") }
     val context = LocalContext.current
     val taskList = remember { mutableStateOf(getTaskList(sharedPreferences)) }
-    var selectedHour by remember { mutableStateOf(0) }
-    var selectedMinute by remember { mutableStateOf(0) }
 
     Column(
         modifier = modifier
@@ -63,39 +56,6 @@ fun TaskInputScreen(modifier: Modifier = Modifier, sharedPreferences: SharedPref
             .padding(16.dp),
         verticalArrangement = Arrangement.Top
     ) {
-        // 時間設定ボタン
-        Button(
-            onClick = {
-                TimePickerDialog(
-                    context,
-                    { _, hour, minute ->
-                        selectedHour = hour
-                        selectedMinute = minute
-
-                        // アラームを設定して、その時間に全タスクのチェックをクリアする
-                        setClearAllTasksAlarm(context, hour, minute)
-                    },
-                    selectedHour,
-                    selectedMinute,
-                    true
-                ).show()
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("時間を設定")
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // 水平線を追加
-        Divider(
-            color = Color.Gray,
-            thickness = 1.dp,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp)
-        )
-
         // タスクの入力フィールドと追加ボタンを横に配置
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -213,28 +173,6 @@ fun saveTaskList(sharedPreferences: SharedPreferences, taskList: MutableList<Str
     val editor = sharedPreferences.edit()
     editor.putString("taskList", json)
     editor.apply()
-}
-
-fun setClearAllTasksAlarm(context: Context, hour: Int, minute: Int) {
-    val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-    val intent = Intent(context, TaskReminderWidget::class.java).apply {
-        action = "CLEAR_ALL_TASKS"
-    }
-    val pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-
-    val calendar = Calendar.getInstance().apply {
-        timeInMillis = System.currentTimeMillis()
-        set(Calendar.HOUR_OF_DAY, hour)
-        set(Calendar.MINUTE, minute)
-        set(Calendar.SECOND, 0)
-
-        // 設定した時間が過去なら翌日に設定
-        if (before(Calendar.getInstance())) {
-            add(Calendar.DAY_OF_MONTH, 1)
-        }
-    }
-
-    alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, pendingIntent)
 }
 
 @Preview(showBackground = true)

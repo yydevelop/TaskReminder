@@ -20,6 +20,14 @@
             android:layout_height="wrap_content"
             android:src="@android:drawable/ic_input_add"
             android:contentDescription="Add Task" />
+
+        <!-- クリアボタン -->
+        <Button
+            android:id="@+id/clearAllTasksButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="リセット"
+            android:contentDescription="Clear All Tasks" />
     </LinearLayout>
 
     <!-- タスクコンテナ -->

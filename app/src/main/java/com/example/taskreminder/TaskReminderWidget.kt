@@ -40,6 +40,16 @@ class TaskReminderWidget : AppWidgetProvider() {
                     updateAppWidget(context, appWidgetManager, appWidgetId)
                 }
             }
+        } else if (intent.action == "CLEAR_ALL_TASKS") {
+            val sharedPreferences = context.getSharedPreferences("TaskReminderPrefs", Context.MODE_PRIVATE)
+            saveCompletedTasks(sharedPreferences, mutableSetOf()) // 完了済みタスクリストをクリア
+
+            val appWidgetManager = AppWidgetManager.getInstance(context)
+            val thisAppWidget = ComponentName(context.packageName, javaClass.name)
+            val appWidgetIds = appWidgetManager.getAppWidgetIds(thisAppWidget)
+            for (appWidgetId in appWidgetIds) {
+                updateAppWidget(context, appWidgetManager, appWidgetId)
+            }
         }
     }
 
@@ -95,6 +105,12 @@ class TaskReminderWidget : AppWidgetProvider() {
             val addTaskPendingIntent = PendingIntent.getBroadcast(context, 0, addTaskIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
             views.setOnClickPendingIntent(R.id.addTaskButton, addTaskPendingIntent)
 
+            // クリアボタンのインテントを設定
+            val clearAllTasksIntent = Intent(context, TaskReminderWidget::class.java)
+            clearAllTasksIntent.action = "CLEAR_ALL_TASKS"
+            val clearAllTasksPendingIntent = PendingIntent.getBroadcast(context, 0, clearAllTasksIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+            views.setOnClickPendingIntent(R.id.clearAllTasksButton, clearAllTasksPendingIntent)
+
             appWidgetManager.updateAppWidget(appWidgetId, views)
         }
 
@@ -104,7 +120,7 @@ class TaskReminderWidget : AppWidgetProvider() {
             val json = sharedPreferences.getString("taskList", null)
             val type = object : TypeToken<MutableList<String>>() {}.type
             return if (json != null) {
-                gson.fromJson<MutableList<String>>(json, type) // 型を明示的に指定してオーバーロードの解決を助けます
+                gson.fromJson<MutableList<String>>(json, type)
             } else {
                 mutableListOf()
             }
